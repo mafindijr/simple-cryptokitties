@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { shortAddress, SEPOLIA } from "@/lib/web3";
-import { Link2, Wallet, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  Link2,
+  Wallet,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  Copy,
+  Check,
+} from "lucide-react";
 
 interface AppHeaderProps {
   address: string | null;
@@ -25,37 +33,25 @@ export function AppHeader({
   onConnect,
   onSwitchNetwork,
 }: AppHeaderProps) {
-  const [mounted, setMounted] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <header className="sticky top-0 z-50 glass border-b border-border/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-primary/20 animate-pulse" />
-              <div className="space-y-1">
-                <div className="h-4 w-40 bg-muted/50 rounded animate-pulse" />
-                <div className="h-3 w-24 bg-muted/50 rounded animate-pulse" />
-              </div>
-            </div>
-            <div className="h-9 w-32 bg-muted/50 rounded-lg animate-pulse" />
-          </div>
-        </div>
-      </header>
-    );
-  }
+  const copyAddress = async () => {
+    if (!address) return;
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-50 glass border-b border-border/50">
+    <header className="sticky top-0 z-50 border-b border-white/10 glass">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-20 items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center glow-sm">
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-primary via-violet-400 to-cyan-400 flex items-center justify-center glow-sm">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -76,30 +72,31 @@ export function AppHeader({
               </svg>
             </div>
             <div className="leading-tight">
-              <div className="text-base font-bold gradient-text">
+              <div className="text-base font-bold gradient-text tracking-wide">
                 Simple CryptoKitties
               </div>
-              <div className="text-xs text-muted-foreground">
-                Breed NFTs on <span className="text-primary font-medium">{SEPOLIA.name}</span>
+              <div className="text-xs text-muted-foreground/90">
+                Breed NFTs on{" "}
+                <span className="text-cyan-300 font-medium">{SEPOLIA.name}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             {error && (
-              <div className="hidden sm:flex items-center gap-1.5 text-sm text-red-400">
+              <div className="hidden md:flex items-center gap-1.5 rounded-full border border-red-400/25 bg-red-500/10 px-2.5 py-1 text-xs text-red-300">
                 <AlertCircle className="h-4 w-4" />
                 <span className="max-w-[150px] truncate">{error}</span>
               </div>
             )}
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 sm:gap-2.5">
               {address ? (
                 <>
                   {isCorrectNetwork ? (
                     <Badge
                       variant="secondary"
-                      className="hidden sm:inline-flex items-center gap-1.5 bg-green-500/10 text-green-400 border-green-500/30"
+                      className="hidden sm:inline-flex items-center gap-1.5 border-cyan-300/30 bg-cyan-400/12 text-cyan-200"
                     >
                       <CheckCircle2 className="h-3 w-3" />
                       {SEPOLIA.name}
@@ -109,31 +106,50 @@ export function AppHeader({
                       variant="secondary"
                       size="sm"
                       onClick={onSwitchNetwork}
-                      className="text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20"
+                      className="text-amber-300 border-amber-300/35 bg-amber-400/12 hover:bg-amber-400/22"
                     >
                       <Link2 className="h-3.5 w-3.5 mr-1.5" />
                       Switch Network
                     </Button>
                   )}
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 bg-primary/5 border-primary/20 hover:bg-primary/10"
-                  >
-                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                    <Wallet className="h-4 w-4 text-primary" />
-                    <span className="hidden sm:inline">
-                      {shortAddress(address)}
-                    </span>
-                  </Button>
+                  <div className="flex items-center rounded-xl border border-white/15 bg-white/[0.04] p-1 backdrop-blur-xl">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 hover:bg-white/[0.08]"
+                    >
+                      <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <Wallet className="h-4 w-4 text-cyan-200" />
+                      <span className="hidden sm:inline text-sm text-slate-100">
+                        {shortAddress(address)}
+                      </span>
+                      {chainId && (
+                        <span className="hidden md:inline text-[10px] uppercase tracking-wider text-muted-foreground">
+                          #{chainId}
+                        </span>
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="h-8 w-8 rounded-lg border border-transparent hover:border-cyan-300/35 hover:bg-cyan-400/10"
+                      onClick={copyAddress}
+                    >
+                      {copied ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-300" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                 </>
               ) : (
                 <Button
                   onClick={onConnect}
                   disabled={isConnecting}
                   size="sm"
-                  className="gap-2"
+                  className="gap-2 animate-breathe-glow"
                 >
                   {isConnecting ? (
                     <>
